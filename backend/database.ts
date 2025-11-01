@@ -34,6 +34,7 @@ export async function initializeDatabase(opts: {
             new arrow.Field('name', new arrow.Utf8()),
             new arrow.Field('uri', new arrow.Utf8()),
             new arrow.Field('labels', new arrow.List(new arrow.Field('item', new arrow.Utf8())), true),
+            new arrow.Field('updated_at', new arrow.Utf8()),
         ]);
         await db.createTable({ name: 'media', data: [], schema, mode: 'overwrite' });
         console.log("Table 'media' created.");

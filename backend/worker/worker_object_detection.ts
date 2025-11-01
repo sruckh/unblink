@@ -16,7 +16,6 @@ const MAX_IMAGES_TO_PROCESS = 30;
 const latestImageMap = new Map<string, ServerToWorkerObjectDetectionMessage>();
 
 function sendMessage(msg: WorkerObjectDetectionToServerMessage) {
-    console.log("Sending message to server:", msg);
     const worker_msg = encode(msg);
     self.postMessage(worker_msg, [worker_msg.buffer]);
 }
@@ -84,7 +83,6 @@ async function continuousInferenceLoop() {
 
 self.addEventListener("message", (event) => {
     const msg: ServerToWorkerObjectDetectionMessage = event.data;
-    console.log("Object Detection Worker received message:", msg);
     if (msg.type === 'frame_file') {
         // Store the latest message for the stream
         latestImageMap.set(msg.stream_id, msg);

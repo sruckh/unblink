@@ -23,6 +23,19 @@ const server = Bun.serve({
         },
 
         '/media/:id': {
+            PUT: async ({ params, body }: { params: { id: string }, body: any }) => {
+                const { id } = params;
+                const data = await new Response(body).json();
+                const { name, uri, labels } = data;
+                if (!name || !uri) {
+                    return new Response('Missing name or uri', { status: 400 });
+                }
+                const updated_at = new Date().toISOString();
+                await table_media.mergeInsert("id")
+                    .whenMatchedUpdateAll()
+                    .execute([{ id, name, uri, labels: labels ?? [], updated_at }]);
+                return Response.json({ success: true });
+            },
             DELETE: async ({ params }: { params: { id: string } }) => {
                 const { id } = params;
                 await table_media.delete(`id = '${id}'`);
@@ -32,6 +45,8 @@ const server = Bun.serve({
         '/media': {
             GET: async () => {
                 const media = await table_media.query().toArray();
+                // @ts-ignore
+                media.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
                 return Response.json(media);
             },
             POST: async (req: Request) => {
@@ -41,7 +56,8 @@ const server = Bun.serve({
                     return new Response('Missing name or uri', { status: 400 });
                 }
                 const id = randomUUID();
-                await table_media.add([{ id, name, uri, labels: labels ?? [] }]);
+                const updated_at = new Date().toISOString();
+                await table_media.add([{ id, name, uri, labels: labels ?? [], updated_at }]);
                 return Response.json({ success: true, id });
             },
         },

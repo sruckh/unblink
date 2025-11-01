@@ -24,7 +24,7 @@ async function startStream(stream: {
 }, signal: AbortSignal) {
     logger.info(`Starting media stream for ${stream.id}`);
 
-    await streamMedia(stream.uri, (msg) => {
+    await streamMedia(stream, (msg) => {
         const worker_msg = {
             ...msg,
             stream_id: stream.id,

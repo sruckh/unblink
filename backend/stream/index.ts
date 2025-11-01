@@ -138,12 +138,15 @@ function shouldSkipTranscode(videoStream: Stream): boolean {
     return isMjpeg && hasCompatibleFormat;
 }
 
-export async function streamMedia(inputUrl: string, onMessage: (msg: StreamMessage) => void, signal: AbortSignal) {
-    logger.info({ inputUrl }, 'Starting streamMedia for');
+export async function streamMedia(stream: {
+    id: string;
+    uri: string;
+}, onMessage: (msg: StreamMessage) => void, signal: AbortSignal) {
+    logger.info({ uri: stream.uri }, 'Starting streamMedia for');
 
-    logger.info(`Opening media input: ${inputUrl}`);
-    await using input = await MediaInput.open(inputUrl, {
-        options: inputUrl.toLowerCase().startsWith("rtsp://")
+    logger.info(`Opening media input: ${stream.uri}`);
+    await using input = await MediaInput.open(stream.uri, {
+        options: stream.uri.toLowerCase().startsWith("rtsp://")
             ? { rtsp_transport: "tcp" }
             : undefined,
     });
@@ -246,7 +249,7 @@ export async function streamMedia(inputUrl: string, onMessage: (msg: StreamMessa
         if (now - last_save_time < 1000) return;
         last_save_time = now;
 
-        const path = `${FILES_DIR}/${crypto.randomUUID()}.jpg`;
+        const path = `${FILES_DIR}/${stream.id}.jpg`;
         await Bun.write(path, encodedData);
 
         const frame_file_msg: StreamMessage = {

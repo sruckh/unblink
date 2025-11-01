@@ -1,6 +1,8 @@
 import { onMount, For, Show } from 'solid-js';
 import LayoutContent from "./LayoutContent";
 import { cameras, camerasLoading, fetchCameras } from './shared';
+import EditCameraButton from './EditCameraButton';
+import { format } from 'date-fns';
 
 export default function HomeContent() {
     onMount(fetchCameras);
@@ -37,6 +39,9 @@ export default function HomeContent() {
                                 Labels
                             </th>
                             <th scope="col" class="px-6 py-3 font-medium">
+                                Updated At
+                            </th>
+                            <th scope="col" class="px-6 py-3 font-medium">
                                 Actions
                             </th>
                         </tr>
@@ -44,12 +49,12 @@ export default function HomeContent() {
                     <tbody>
                         <Show when={!camerasLoading()} fallback={
                             <tr>
-                                <td colspan="4" class="text-center p-4">Loading...</td>
+                                <td colspan="5" class="text-center p-4">Loading...</td>
                             </tr>
                         }>
                             <Show when={cameras().length > 0} fallback={
                                 <tr>
-                                    <td colspan="4" class="text-center p-4">No cameras found. Add one to get started.</td>
+                                    <td colspan="5" class="text-center p-4">No cameras found. Add one to get started.</td>
                                 </tr>
                             }>
                                 <For each={cameras()}>
@@ -58,22 +63,28 @@ export default function HomeContent() {
                                             <td class="px-6 py-4 font-medium text-white">
                                                 {camera.name}
                                             </td>
-                                            <td class="px-6 py-4">
-                                                <span class=" line-clamp-1 break-all">{camera.uri}</span>
+                                            <td class="px-6 py-4 max-w-[20vw]">
+                                                <span class="line-clamp-1 break-all">{camera.uri}</span>
                                             </td>
                                             <td class="px-6 py-4">
                                                 <div class="flex flex-wrap gap-1">
                                                     <For each={camera.labels}>
                                                         {(label) => (
-                                                            <span class="bg-neu-700 text-neu-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                                                            <span class="bg-neu-700 text-neu-300 text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap">
                                                                 {label}
                                                             </span>
                                                         )}
                                                     </For>
                                                 </div>
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {format(camera.updated_at, 'PPpp')}
+                                            </td>
                                             <td class="px-6 py-4">
-                                                <div class="flex items-center">
+                                                <div class="flex items-center gap-2">
+                                                    <EditCameraButton camera={camera}>
+                                                        Edit
+                                                    </EditCameraButton>
                                                     <button onClick={() => handleDelete(camera.id)} class="btn-primary">Delete</button>
                                                 </div>
                                             </td>

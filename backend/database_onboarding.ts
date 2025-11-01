@@ -30,6 +30,7 @@ export async function onboardMedia(connection: lancedb.Connection) {
         name: media.name,
         uri: media.uri,
         labels: media.labels,
+        updated_at: new Date().toISOString(),
     }));
 
     await table_media.add(newMediaEntries);
