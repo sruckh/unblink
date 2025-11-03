@@ -1,6 +1,7 @@
 import { createSignal, onMount } from "solid-js";
 import LayoutContent from "./LayoutContent";
 import ArkSwitch from "./ark/ArkSwitch";
+import { toaster } from "./ark/ArkToast";
 
 export default function SettingsContent() {
     const [objectDetection, setObjectDetection] = createSignal(false);
@@ -23,7 +24,7 @@ export default function SettingsContent() {
     };
 
     const handleSaveSettings = async () => {
-        try {
+        toaster.promise(async () => {
             await fetch("/settings", {
                 method: "PUT",
                 headers: {
@@ -31,9 +32,20 @@ export default function SettingsContent() {
                 },
                 body: JSON.stringify({ key: 'object_detection_enabled', value: objectDetection().toString() }),
             });
-        } catch (error) {
-            console.error("Error updating settings:", error);
-        }
+        }, {
+            loading: {
+                title: 'Saving...',
+                description: 'Your settings are being saved.',
+            },
+            success: {
+                title: 'Success!',
+                description: 'Settings have been saved successfully.',
+            },
+            error: {
+                title: 'Failed',
+                description: 'There was an error saving your settings. Please try again.',
+            },
+        })
     };
 
     return <LayoutContent title="Settings">

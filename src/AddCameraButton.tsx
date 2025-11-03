@@ -4,6 +4,7 @@ import { Dialog } from '@ark-ui/solid/dialog';
 import { ArkDialog } from './ark/ArkDialog';
 import { createSignal, untrack } from 'solid-js';
 import { fetchCameras } from './shared';
+import { toaster } from './ark/ArkToast';
 
 export default function AddCameraButton() {
     const [name, setName] = createSignal('');
@@ -19,7 +20,7 @@ export default function AddCameraButton() {
 
         const labelsArray = labels().split(',').map(l => l.trim()).filter(l => l);
 
-        try {
+        toaster.promise(async () => {
             const response = await fetch('/media', {
                 method: 'POST',
                 headers: {
@@ -34,11 +35,22 @@ export default function AddCameraButton() {
                 setLabels('');
                 fetchCameras();
             } else {
-                console.error('Failed to save camera');
+                throw new Error('Failed to save camera');
             }
-        } catch (error) {
-            console.error('Error saving camera:', error);
-        }
+        }, {
+            loading: {
+                title: 'Saving...',
+                description: 'Your camera is being added.',
+            },
+            success: {
+                title: 'Success!',
+                description: 'Camera has been added successfully.',
+            },
+            error: {
+                title: 'Failed',
+                description: 'There was an error adding your camera. Please try again.',
+            },
+        })
     };
 
     return <ArkDialog

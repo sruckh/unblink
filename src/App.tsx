@@ -9,6 +9,7 @@ import SideBar from './SideBar';
 import { connectWebSocket } from './video/connection';
 import ViewContent from './ViewContent';
 import SettingsContent from './SettingsContent';
+import ArkToast from './ark/ArkToast';
 
 export default function App() {
     onMount(() => {
@@ -25,6 +26,7 @@ export default function App() {
     })
 
     return <div class="h-screen flex items-start bg-neu-925 text-white space-x-2">
+        <ArkToast />
         <SideBar />
         <div class="flex-1">
             <Show when={tabId() === 'home'}>

@@ -5,6 +5,7 @@ import { fetchCameras, type Camera } from './shared';
 import { FiEdit } from 'solid-icons/fi';
 import { Switch } from '@ark-ui/solid';
 import ArkSwitch from './ark/ArkSwitch';
+import { toaster } from './ark/ArkToast';
 
 
 export default function EditCameraButton(props: { camera: Camera, children: any }) {
@@ -33,7 +34,7 @@ export default function EditCameraButton(props: { camera: Camera, children: any 
 
         const labelsArray = labels().split(',').map(l => l.trim()).filter(l => l);
 
-        try {
+        toaster.promise(async () => {
             const response = await fetch(`/media/${props.camera.id}`, {
                 method: 'PUT',
                 headers: {
@@ -51,11 +52,22 @@ export default function EditCameraButton(props: { camera: Camera, children: any 
             if (response.ok) {
                 fetchCameras();
             } else {
-                console.error('Failed to save camera');
+                throw new Error('Failed to save camera');
             }
-        } catch (error) {
-            console.error('Error saving camera:', error);
-        }
+        }, {
+            loading: {
+                title: 'Saving...',
+                description: 'Your camera is being updated.',
+            },
+            success: {
+                title: 'Success!',
+                description: 'Camera has been updated successfully.',
+            },
+            error: {
+                title: 'Failed',
+                description: 'There was an error updating your camera. Please try again.',
+            },
+        });
     };
 
     return <ArkDialog
