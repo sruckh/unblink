@@ -76,6 +76,7 @@ export type ServerToWorkerStreamMessage = ServerToWorkerStreamMessage_Add_Stream
 
 export type ServerToWorkerObjectDetectionMessage = {
     stream_id: string;
+    file_name?: string;
 } & FrameMessage
 
 export type DetectionObject = {
@@ -92,6 +93,7 @@ export type DetectionObject = {
 export type WorkerObjectDetectionToServerMessage = {
     type: 'object_detection';
     stream_id: string;
+    file_name?: string;
     objects: DetectionObject[];
 }
 

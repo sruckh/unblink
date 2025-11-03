@@ -26,3 +26,5 @@ await ensureDirExists(RUNTIME_DIR);
 await ensureDirExists(MODELS_DIR);
 await ensureDirExists(FILES_DIR);
 await ensureDirExists(DATABASE_PATH);
+await ensureDirExists(FRAMES_DIR);
+await ensureDirExists(RECORDINGS_DIR);

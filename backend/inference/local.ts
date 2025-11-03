@@ -58,10 +58,10 @@ export async function downloadModelFile() {
 
 export async function loadObjectDetectionModel() {
     await model_downloaded_promise;
-    if (!existsSync(join(MODELS_DIR, 'd_fine/onnx/model.onnx'))) {
+    const MODEL_PATH = join(MODELS_DIR, 'd_fine/onnx/model.onnx');
+    if (!existsSync(MODEL_PATH)) {
         throw new Error('Model file does not exist. Please run the CLI to download the model files.');
     }
-    const MODEL_PATH = join(MODELS_DIR, 'd_fine/onnx/model.onnx');
     const CONFIG_PATH = join(MODELS_DIR, 'd_fine/config.json');
     const PREPROCESSOR_CONFIG_PATH = join(MODELS_DIR, 'd_fine/preprocessor_config.json');
 

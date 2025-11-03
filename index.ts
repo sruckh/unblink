@@ -64,34 +64,39 @@ const server = Bun.serve({
         },
         '/recordings': {
             GET: async () => {
-                const recordingsByStream: RecordingsResponse = {};
-                const glob = new Bun.Glob("*/*.mkv");
-                for await (const file of glob.scan(RECORDINGS_DIR)) {
-                    const parts = file.split("/");
-                    if (parts.length < 2) {
-                        continue;
+                try {
+                    const recordingsByStream: RecordingsResponse = {};
+                    const glob = new Bun.Glob("*/*.mkv");
+                    for await (const file of glob.scan(RECORDINGS_DIR)) {
+                        const parts = file.split("/");
+                        if (parts.length < 2) {
+                            continue;
+                        }
+                        const streamId = parts[0]!;
+                        // from_1762122447803_ms.mkv
+                        const file_name = parts[1]!;
+
+                        const from_ms = file_name.match(/from_(\d+)_ms\.mkv/)?.[1];
+                        const to_ms = file_name.match(/_to_(\d+)_ms\.mkv/)?.[1];
+
+                        const fromDate = from_ms ? new Date(parseInt(from_ms)) : null;
+                        const toDate = to_ms ? new Date(parseInt(to_ms)) : null;
+
+                        if (!recordingsByStream[streamId]) {
+                            recordingsByStream[streamId] = [];
+                        }
+
+                        recordingsByStream[streamId].push({
+                            file_name: file_name,
+                            from_ms: fromDate?.getTime(),
+                            to_ms: toDate?.getTime(),
+                        });
                     }
-                    const streamId = parts[0]!;
-                    // from_1762122447803_ms.mkv
-                    const file_name = parts[1]!;
-
-                    const from_ms = file_name.match(/from_(\d+)_ms\.mkv/)?.[1];
-                    const to_ms = file_name.match(/_to_(\d+)_ms\.mkv/)?.[1];
-
-                    const fromDate = from_ms ? new Date(parseInt(from_ms)) : null;
-                    const toDate = to_ms ? new Date(parseInt(to_ms)) : null;
-
-                    if (!recordingsByStream[streamId]) {
-                        recordingsByStream[streamId] = [];
-                    }
-
-                    recordingsByStream[streamId].push({
-                        file_name: file_name,
-                        from_ms: fromDate?.getTime(),
-                        to_ms: toDate?.getTime(),
-                    });
+                    return Response.json(recordingsByStream);
+                } catch (error) {
+                    logger.error({ error }, 'Error fetching recordings');
+                    return new Response('Error fetching recordings', { status: 500 });
                 }
-                return Response.json(recordingsByStream);
             }
         },
     },

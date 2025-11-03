@@ -1,4 +1,5 @@
 import { onCleanup, onMount, Show, untrack } from "solid-js";
+import { Portal } from "solid-js/web";
 
 export default function Backdrop(props: { isOpen: () => boolean, barRef: () => HTMLDivElement | undefined, setIsOpen: (v: boolean) => void }) {
 

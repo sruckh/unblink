@@ -1,7 +1,7 @@
 
-import { BsGithub, BsPencilFill } from 'solid-icons/bs';
+import { BsGearFill, BsGithub, BsPencilFill } from 'solid-icons/bs';
 import { FaSolidChevronDown } from 'solid-icons/fa';
-import { FiClock, FiFilm, FiGrid, FiMonitor, FiSearch } from 'solid-icons/fi';
+import { FiClock, FiFilm, FiGrid, FiMonitor, FiSearch, FiSettings } from 'solid-icons/fi';
 import { createSignal, For, Show, createMemo, onMount, batch } from 'solid-js';
 import logoSVG from '~/assets/logo.svg';
 import AddCameraButton from './AddCameraButton';
@@ -183,9 +183,9 @@ export default function SideBar() {
                     <BsGithub class="w-5 h-5" />
                     <div class="ml-2 ">GitHub</div>
                 </div>
-                <div class="flex items-center transition hover:text-white text-neu-500 hover:cursor-pointer">
-                    <BsPencilFill class="w-5 h-5" />
-                    <div class="ml-2 ">Feedback</div>
+                <div onClick={() => setTabId('settings')} class="flex items-center transition hover:text-white text-neu-500 hover:cursor-pointer">
+                    <FiSettings class="w-5 h-5" />
+                    <div class="ml-2 ">Settings</div>
                 </div>
 
             </div>

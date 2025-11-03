@@ -1,10 +1,13 @@
 import * as ort from 'onnxruntime-node';
 import sharp from 'sharp';
 import { type ObjectDetectionModel } from './local';
+import { logger } from '../logger';
 
 
 // --- TYPE DEFINITIONS ---
 // Defines the structure of preprocessor_config.json for type safety
+
+const CONFIDENCE_THRESHOLD = 0.3;
 export interface PreprocessorConfig {
     size: {
         height: number;
@@ -90,7 +93,6 @@ export function postprocess(
     modelWidth: number,
     modelHeight: number
 ): DetectionResult[][] {
-    const CONFIDENCE_THRESHOLD = 0.9;
     const { logits: logitsTensor, pred_boxes: boxesTensor } = results;
 
     // Type assertion for safety
@@ -141,9 +143,18 @@ export function postprocess(
 
 
 export async function detect_objects(buffers: Buffer<ArrayBufferLike>[], model: ObjectDetectionModel) {
+    // const start = Date.now();
     const tensor = await preprocess(buffers, model.preprocessorConfig);
+    // const endPreprocess = Date.now();
+    // logger.info(`Preprocessing ${buffers.length} images took ${endPreprocess - start} ms`);
     const feeds: Record<string, ort.Tensor> = { [model.session.inputNames[0] as any]: tensor };
+    // const endFeeds = Date.now();
+    // logger.info(`Preparing feeds took ${endFeeds - endPreprocess} ms`);
     const results = await model.session.run(feeds);
+    // const endInference = Date.now();
+    // logger.info(`Inference on ${buffers.length} images took ${endInference - endFeeds} ms`);
     const detections = postprocess(results, model.id2label, model.modelWidth, model.modelHeight);
+    // const endPostprocess = Date.now();
+    // logger.info(`Postprocessing ${buffers.length} images took ${endPostprocess - endInference} ms`);
     return detections;
 }

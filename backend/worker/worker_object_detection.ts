@@ -29,6 +29,7 @@ async function continuousInferenceLoop() {
         return;
     }
 
+    // logger.info(`Running continuous inference on up to ${latestImageMap.size} images`);
     // Process images from the map (get up to MAX_IMAGES_TO_PROCESS)
     const imagesToProcess: ServerToWorkerObjectDetectionMessage[] = [];
     let count = 0;
@@ -46,16 +47,24 @@ async function continuousInferenceLoop() {
 
     try {
         // logger.info(`Processing ${imagesToProcess.length} unique images for object detection`);
-
+        // const start = Date.now();
         const paths = imagesToProcess.map(item => item.path);
+        // const endPrep = Date.now();
+        // logger.info(`Preparing to process images took ${endPrep - start} ms`);
         const buffers = await buffersFromPaths(paths);
+        // const endBuffers = Date.now();
+        // logger.info(`Loading image buffers took ${endBuffers - endPrep} ms`);
         const detections = await detect_objects(buffers, objectDetectionModel);
+        // const endDetect = Date.now();
+        // logger.info(`Object detection inference took ${endDetect - endBuffers} ms`);
+        // logger.info({ detections }, `Completed object detection for paths: ${paths.join(", ")}`);
 
         imagesToProcess.forEach((message, i) => {
             const detectionResults = detections[i] || [];
             const result = {
                 type: 'object_detection' as const,
                 stream_id: message.stream_id,
+                file_name: message.file_name,
                 objects: detectionResults.map(obj => {
                     const x1 = parseFloat(obj.box[0] || '0');
                     const y1 = parseFloat(obj.box[1] || '0');
@@ -96,4 +105,5 @@ async function startInferenceLoop() {
     }
 }
 
+logger.info("Worker 'object detection' ready");
 startInferenceLoop();

@@ -8,6 +8,7 @@ import { conn, setConn, subscription, tabId } from './shared';
 import SideBar from './SideBar';
 import { connectWebSocket } from './video/connection';
 import ViewContent from './ViewContent';
+import SettingsContent from './SettingsContent';
 
 export default function App() {
     onMount(() => {
@@ -40,6 +41,9 @@ export default function App() {
             </Show>
             <Show when={tabId() === 'view'}>
                 <ViewContent />
+            </Show>
+            <Show when={tabId() === 'settings'}>
+                <SettingsContent />
             </Show>
         </div>
 

@@ -4,6 +4,7 @@ import { createSignal, untrack, onMount, Show } from 'solid-js';
 import { fetchCameras, type Camera } from './shared';
 import { FiEdit } from 'solid-icons/fi';
 import { Switch } from '@ark-ui/solid';
+import ArkSwitch from './ark/ArkSwitch';
 
 
 export default function EditCameraButton(props: { camera: Camera, children: any }) {
@@ -92,17 +93,11 @@ export default function EditCameraButton(props: { camera: Camera, children: any 
                     type="text" id="camera-labels" class="px-3 py-1.5 mt-1 block w-full rounded-lg bg-neu-850 border border-neu-750 text-white focus:outline-none placeholder:text-neu-500" />
             </div>
             <div class="flex items-center justify-between">
-                <Switch.Root
-                    checked={saveToDisk()}
+                <ArkSwitch
+                    checked={saveToDisk}
                     onCheckedChange={(details) => setSaveToDisk(details.checked)}
-                    class="flex items-center"
-                >
-                    <Switch.Control class="relative inline-flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none data-[state=checked]:bg-violet-500 data-[state=unchecked]:bg-neu-700">
-                        <Switch.Thumb class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
-                    </Switch.Control>
-                    <Switch.Label class="ml-3 text-sm font-medium text-neu-300">Save to Disk</Switch.Label>
-                    <Switch.HiddenInput />
-                </Switch.Root>
+                    label="Save to Disk"
+                />
             </div>
             <Show when={saveToDisk()}>
                 <div>

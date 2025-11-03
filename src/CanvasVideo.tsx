@@ -231,8 +231,8 @@ export default function CanvasVideo(props: { stream_id: string, file_name?: stri
     createEffect(() => {
         const message = newMessage();
         const s = subscription();
-        console.log('message', message, props.file_name)
-        if (message?.type == 'frame' && message?.stream_id === props.stream_id && message.file_name === props.file_name && message.session_id == s?.session_id) {
+        const isCorrectType = message?.type == 'frame' || message?.type == 'codec' || message?.type == 'object_detection';
+        if (isCorrectType && message?.stream_id === props.stream_id && message.file_name === props.file_name && message.session_id == s?.session_id) {
             player?.handleMessage(message);
         }
     });
