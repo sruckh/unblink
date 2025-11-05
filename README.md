@@ -2,14 +2,6 @@
 <img width="300" src="assets/logo.svg">
 </p>
 
-<p align="center">
-Join us here! 
-</p>
-
-<p align="center">
-<a href="https://discord.gg/YMAjT8A6e2"><img src="https://img.shields.io/discord/1435479251578261637?color=5865F2&logo=discord&logoColor=white&label=Discord" alt="Discord"></a>
-</p>
-
 # Unblink
 
 Unblink is a camera monitoring application that runs AI vision models on your camera streams in real-time. Key features:
