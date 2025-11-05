@@ -3,8 +3,8 @@
 # Set the name for your tmux session
 SESSION_NAME="unblink"
 
-# Check if a tmux session with the same name already exists
-tmux has-session -t $SESSION_NAME 2>/dev/null
+# Check if a tmux session with the EXACT name already exists by adding '='.
+tmux has-session -t "=$SESSION_NAME" 2>/dev/null
 
 # $? is a special variable that holds the exit code of the last command.
 # If the session does not exist, tmux has-session returns a non-zero exit code.
