@@ -6,7 +6,7 @@ import { logger } from "./backend/logger";
 
 import type { ServerWebSocket } from "bun";
 import { WsClient } from "./backend/WsClient";
-import { verifyPassword } from "./backend/auth";
+import { auth_required, verifyPassword } from "./backend/auth";
 import { createForwardFunction } from "./backend/forward";
 import { check_version } from "./backend/startup/check_version";
 import { connect_to_engine } from "./backend/startup/connect_to_engine";
@@ -17,6 +17,13 @@ import { spawn_worker } from "./backend/worker_connect/shared";
 import { start_stream_file, start_streams, stop_stream } from "./backend/worker_connect/worker_stream_connector";
 import homepage from "./index.html";
 import type { ClientToServerMessage, DbUser, RecordingsResponse } from "./shared";
+import { admin } from "./admin";
+
+// Check args for "admin" mode
+if (process.argv[2] === "admin") {
+    await admin()
+    process.exit(0);
+}
 
 
 logger.info(`Using runtime directory: ${RUNTIME_DIR}`);
@@ -104,37 +111,18 @@ const server = Bun.serve({
 
         "/auth/me": {
             GET: async (req: Request) => {
-                const cookies = req.headers.get("cookie");
-                const session_id = cookies?.match(/session_id=([^;]+)/)?.[1];
-                if (!session_id) return new Response("Unauthorized", { status: 401 });
+                const auth_res = await auth_required(req);
+                if (auth_res.error) {
+                    return new Response(auth_res.error.msg, { status: auth_res.error.code || 401 });
+                }
 
-                const session = await table_sessions
-                    .query()
-                    .where(`session_id = "${session_id}"`)
-                    .limit(1)
-                    .toArray()
-                    .then(s => s.at(0));
-
-                if (!session || new Date(session.expires_at) < new Date())
-                    return new Response("Session expired", { status: 401 });
-
-                const user = await table_users
-                    .query()
-                    .where(`id = "${session.user_id}"`)
-                    .limit(1)
-                    .toArray()
-                    .then(u => u.at(0));
-
-                if (!user) return new Response("User not found", { status: 404 });
-
-                // optional: extend session on activity
-                const newExpiresAt = new Date(Date.now() + SESSION_DURATION_HOURS * 3600 * 1000);
-                await table_sessions.update(
-                    { expires_at: newExpiresAt.getTime().toString() },
-                    { where: `session_id = "${session_id}"` }
-                );
-
-                return Response.json({ user });
+                const { user } = auth_res.data;
+                const maskedUser = {
+                    id: user.id,
+                    username: user.username,
+                    role: user.role,
+                };
+                return Response.json({ user: maskedUser });
             },
         },
 
@@ -166,6 +154,11 @@ const server = Bun.serve({
                 return Response.json(media);
             },
             POST: async (req: Request) => {
+                const auth_res = await auth_required(req);
+                if (auth_res.error) {
+                    return new Response(auth_res.error.msg, { status: auth_res.error.code || 401 });
+                }
+
                 const body = await req.json();
                 const { name, uri, labels, saveToDisk, saveDir } = body;
                 if (!name || !uri) {
@@ -215,12 +208,16 @@ const server = Bun.serve({
             }
         },
         '/settings': {
-            GET: async () => {
+            GET: async (req) => {
                 const settings = await table_settings.query().toArray();
                 return Response.json(settings);
             },
             PUT: async (req: Request) => {
-                // TODO: secure this endpoint
+                const auth_res = await auth_required(req);
+                if (auth_res.error) {
+                    return new Response(auth_res.error.msg, { status: auth_res.error.code || 401 });
+                }
+
                 const body = await req.json();
                 const { key, value } = body;
                 if (!key || value === undefined) {

@@ -136,3 +136,10 @@ export type DbUser = {
     role: string;
     password_hash: string;
 };
+
+export type DbSession = {
+    session_id: string;
+    user_id: string;
+    created_at: Date;
+    expires_at: Date;
+};

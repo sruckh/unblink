@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import type { ClientToServerMessage, ServerToClientMessage, Subscription } from "~/shared";
+import type { ClientToServerMessage, ServerToClientMessage, Subscription, User } from "~/shared";
 import { toaster } from "./ark/ArkToast";
 import type { Conn } from "~/shared/Conn";
 
@@ -24,6 +24,14 @@ export type Tab = {
 } | {
     type: 'search_result';
     query: string;
+}
+
+export const [isAuthenticated, setIsAuthenticated] = createSignal(false);
+export const [user, setUser] = createSignal<User>();
+export const authorized_as_admin = () => {
+    if (settings()['auth_screen_enabled'] !== 'true') return true; // if auth screen is disabled, all users are admins  
+    const u = user();
+    return u && u.role === 'admin';
 }
 export const [tab, setTab] = createSignal<Tab>({ type: 'home' });
 export const [cameras, setCameras] = createSignal<Camera[]>([]);

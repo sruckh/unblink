@@ -1,11 +1,11 @@
 
 import { BsGithub } from 'solid-icons/bs';
 import { FaSolidChevronDown } from 'solid-icons/fa';
-import { FiBell, FiClock, FiFilm, FiGrid, FiMonitor, FiSearch, FiSettings } from 'solid-icons/fi';
+import { FiClock, FiFilm, FiGrid, FiMonitor, FiSearch, FiSettings } from 'solid-icons/fi';
 import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 import logoSVG from '~/assets/logo.svg';
 import AddCameraButton from './AddCameraButton';
-import { cameras, camerasLoading, fetchCameras, setTab, tab, type Camera } from './shared';
+import { authorized_as_admin, cameras, camerasLoading, fetchCameras, setTab, tab, type Camera } from './shared';
 
 function MediaGroup(props: { group: { label: string; cameras: Camera[] } }) {
     const [isOpen, setIsOpen] = createSignal(true);
@@ -133,7 +133,7 @@ export default function SideBar() {
         },
     ];
 
-    return <div class="w-80 h-screen pl-2 py-2">
+    return <div class="w-80 h-screen pl-2 py-2 select-none">
         <div class="bg-neu-900 h-full rounded-2xl border border-neu-800 flex flex-col drop-shadow-2xl">
 
             {/* Head */}
@@ -197,9 +197,13 @@ export default function SideBar() {
                     <BsGithub class="w-5 h-5" />
                     <div class="ml-2 ">GitHub</div>
                 </div>
+
+
                 <div onClick={() => setTab({
                     type: 'settings'
-                })} class="flex items-center transition hover:text-white text-neu-500 hover:cursor-pointer">
+                })}
+                    data-disabled={authorized_as_admin()}
+                    class="flex items-center transition data-[disabled=false]:hover:text-white text-neu-500 hover:cursor-pointer data-[disabled=true]:opacity-50 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:pointer-events-none">
                     <FiSettings class="w-5 h-5" />
                     <div class="ml-2 ">Settings</div>
                 </div>

@@ -1,27 +1,12 @@
-import { onMount, For, Show } from 'solid-js';
-import LayoutContent from "./LayoutContent";
-import { cameras, camerasLoading, fetchCameras } from '~/src/shared';
-import EditCameraButton from '~/src/EditCameraButton';
 import { format } from 'date-fns';
+import { For, onMount, Show } from 'solid-js';
+import DeleteCameraButton from '~/src/DeleteCameraButton';
+import EditCameraButton from '~/src/EditCameraButton';
+import { authorized_as_admin, cameras, camerasLoading, fetchCameras } from '~/src/shared';
+import LayoutContent from "./LayoutContent";
 
 export default function HomeContent() {
     onMount(fetchCameras);
-
-    const handleDelete = async (id: string) => {
-        try {
-            const response = await fetch(`/media/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                fetchCameras();
-            } else {
-                console.error('Failed to delete media');
-            }
-        } catch (error) {
-            console.error('Error deleting media:', error);
-        }
-    };
 
     return <LayoutContent title="Home">
         <div class="">
@@ -41,9 +26,11 @@ export default function HomeContent() {
                             <th scope="col" class="px-6 py-3 font-medium">
                                 Updated At
                             </th>
-                            <th scope="col" class="px-6 py-3 font-medium">
-                                Actions
-                            </th>
+                            <Show when={authorized_as_admin()}>
+                                <th scope="col" class="px-6 py-3 font-medium">
+                                    Actions
+                                </th>
+                            </Show>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,14 +67,18 @@ export default function HomeContent() {
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 {format(camera.updated_at, 'PPpp')}
                                             </td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-2">
-                                                    <EditCameraButton camera={camera}>
-                                                        Edit
-                                                    </EditCameraButton>
-                                                    <button onClick={() => handleDelete(camera.id)} class="btn-primary">Delete</button>
-                                                </div>
-                                            </td>
+                                            <Show when={authorized_as_admin()}>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-2">
+                                                        <EditCameraButton camera={camera}>
+                                                            Edit
+                                                        </EditCameraButton>
+                                                        <DeleteCameraButton camera={camera}>
+                                                            Delete
+                                                        </DeleteCameraButton>
+                                                    </div>
+                                                </td>
+                                            </Show>
                                         </tr>
                                     )}
                                 </For>

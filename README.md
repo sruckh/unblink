@@ -107,6 +107,9 @@ The model inference code is in a separate repository at [https://github.com/tri2
 
 Currently I have the engine hosted on my GPU server that you can use (the client app automatically connects to it), so hosting the engine yourself is optional. If you need to, you can mofidy `ENGINE_URL` env var and the client app will connect there instead.
 
+## Authentication & Administration
+For administration, please refer to [ADMIN.md](/ADMIN.md)
+
 ## Project Status
 
 | Feature | Status | Notes |

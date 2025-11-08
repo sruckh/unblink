@@ -2,6 +2,8 @@ import { table_users, table_settings, table_secrets } from './backend/database';
 import { randomUUID } from 'crypto';
 import { createInterface } from 'node:readline/promises';
 import { hashPassword } from './backend/auth';
+import { RUNTIME_DIR } from './backend/appdir';
+import fs from 'fs/promises';
 
 const rl = createInterface({
     input: process.stdin,
@@ -33,10 +35,16 @@ const helpText = {
         subcommands: `
       modify <key> <value>  Add or modify a secret
       list [<key>]          List all secret keys or a specific secret's value`
+    },
+    reset: {
+        description: 'Reset the application',
+        usage: 'bun run admin.ts reset',
+        subcommands: `
+      deletes all data and settings`
     }
 };
 
-type HelpTextKeys = 'users' | 'settings' | 'secrets';
+type HelpTextKeys = 'users' | 'settings' | 'secrets' | 'reset';
 
 function showHelp(section?: HelpTextKeys) {
     if (section) {
@@ -127,8 +135,8 @@ async function listUsers() {
 
 // --- Settings Management Functions ---
 
-async function listSettings() {
-    const key = process.argv[4];
+async function listSettings(args: string[]) {
+    const key = args[2];
     if (key) {
         const setting = await table_settings.query().where(`key = '${key}'`).limit(1).toArray();
         if (setting.length === 0) {
@@ -151,9 +159,9 @@ async function listSettings() {
     }
 }
 
-async function modifySetting() {
-    const key = process.argv[4];
-    const value = process.argv[5];
+async function modifySetting(args: string[]) {
+    const key = args[2];
+    const value = args[3];
 
     if (!key || value === undefined) {
         throw new Error("Usage: settings modify <key> <value>");
@@ -169,8 +177,8 @@ async function modifySetting() {
 
 // --- Secrets Management Functions ---
 
-async function listSecrets() {
-    const key = process.argv[4];
+async function listSecrets(args: string[]) {
+    const key = args[2];
     if (key) {
         const secret = await table_secrets.query().where(`key = '${key}'`).limit(1).toArray();
         if (secret.length === 0) {
@@ -193,9 +201,9 @@ async function listSecrets() {
     }
 }
 
-async function modifySecret() {
-    const key = process.argv[4];
-    const value = process.argv[5];
+async function modifySecret(args: string[]) {
+    const key = args[2];
+    const value = args[3];
 
     if (!key || value === undefined) {
         throw new Error("Usage: secrets modify <key> <value>");
@@ -211,8 +219,8 @@ async function modifySecret() {
 
 // --- Command Handlers ---
 
-async function handleUsersCommand() {
-    const subcommand = process.argv[3];
+async function handleUsersCommand(args: string[]) {
+    const subcommand = args[1];
     switch (subcommand) {
         case 'add':
             await addUser();
@@ -237,14 +245,14 @@ async function handleUsersCommand() {
     }
 }
 
-async function handleSettingsCommand() {
-    const subcommand = process.argv[3];
+async function handleSettingsCommand(args: string[]) {
+    const subcommand = args[1];
     switch (subcommand) {
         case 'modify':
-            await modifySetting();
+            await modifySetting(args);
             break;
         case 'list':
-            await listSettings();
+            await listSettings(args);
             break;
         case 'help':
         case undefined:
@@ -257,14 +265,14 @@ async function handleSettingsCommand() {
     }
 }
 
-async function handleSecretsCommand() {
-    const subcommand = process.argv[3];
+async function handleSecretsCommand(args: string[]) {
+    const subcommand = args[1];
     switch (subcommand) {
         case 'modify':
-            await modifySecret();
+            await modifySecret(args);
             break;
         case 'list':
-            await listSecrets();
+            await listSecrets(args);
             break;
         case 'help':
         case undefined:
@@ -277,21 +285,42 @@ async function handleSecretsCommand() {
     }
 }
 
+async function handleResetCommand() {
+    const confirmation = (await rl.question(`Are you sure you want to delete ${RUNTIME_DIR}? (yes/no): `)).trim().toLowerCase();
+    if (confirmation !== 'yes') {
+        console.log('Deletion cancelled.');
+        return;
+    }
+    await fs.rm(RUNTIME_DIR, { recursive: true, force: true });
+}
+
 // --- Main Execution ---
 
-async function main() {
+function getCommandArgs() {
+    const args = process.argv.slice(2);
+    if (args[0] === 'admin') {
+        return args.slice(1);
+    }
+    return args;
+}
+
+export async function admin() {
     try {
-        const command = process.argv[2];
+        const args = getCommandArgs();
+        const command = args[0];
 
         switch (command) {
             case 'users':
-                await handleUsersCommand();
+                await handleUsersCommand(args);
                 break;
             case 'settings':
-                await handleSettingsCommand();
+                await handleSettingsCommand(args);
                 break;
             case 'secrets':
-                await handleSecretsCommand();
+                await handleSecretsCommand(args);
+                break;
+            case 'reset':
+                await handleResetCommand();
                 break;
             case 'help':
             case '--help':
@@ -303,6 +332,7 @@ async function main() {
                 showHelp();
                 process.exitCode = 1;
         }
+
     } catch (error) {
         if (error instanceof Error) {
             console.error(error.message);
@@ -315,4 +345,6 @@ async function main() {
     }
 }
 
-main();
+if (import.meta.main) {
+    await admin();
+}

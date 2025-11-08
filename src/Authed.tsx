@@ -1,11 +1,11 @@
 import { createEffect, createSignal, onMount, Show } from "solid-js";
-import { fetchSettings, settings, settingsLoaded } from "./shared";
+import { fetchSettings, isAuthenticated, setIsAuthenticated, settings, settingsLoaded, setUser } from "./shared";
 import LogInScreen from "./auth/LogInScreen";
 
 export default function Authed(props: {
     children: any
 }) {
-    const [isAuthenticated, setIsAuthenticated] = createSignal(false);
+
     const [isLoading, setIsLoading] = createSignal(true);
 
     onMount(async () => {
@@ -13,6 +13,8 @@ export default function Authed(props: {
 
         if (settings()['auth_screen_enabled'] !== 'true') {
             setIsAuthenticated(true);
+            // This user is a "guest" user when auth screen is disabled
+            setUser();
             setIsLoading(false);
             return;
         }
@@ -20,7 +22,9 @@ export default function Authed(props: {
         try {
             const response = await fetch("/auth/me");
             if (response.ok) {
+                const data = await response.json()
                 setIsAuthenticated(true);
+                setUser(data.user);
             } else {
                 setIsAuthenticated(false);
             }
